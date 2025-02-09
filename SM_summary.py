@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
-import glob
-import plotly.express as px
-import plotly.graph_objects as go
+import plotly
 import datetime
 
 current_time = datetime.datetime.now()
