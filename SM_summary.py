@@ -8,7 +8,7 @@ current_time = datetime.datetime.now()
 current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
 #スペースマーケットの全データを読み込む
-url = 'https://github.com/mkei1031/feeep_sm/blob/main/all_SMrecords.csv'
+url = 'https://github.com/mkei1031/feeep_sm/raw/main/all_SMrecords.csv'
 df = pd.read_csv(url)
 
 #スペースマーケットのデータからキャンセルを省く
