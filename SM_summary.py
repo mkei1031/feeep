@@ -8,7 +8,8 @@ current_time = datetime.datetime.now()
 current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
 #スペースマーケットの全データを読み込む
-df = pd.read_csv('/Users/keimoriyama/Desktop/SM/all_SMrecords.csv',parse_dates=['実施日','予約リクエスト日','成約日'])
+url = https://github.com/mkei1031/feeep_sm/blob/main/all_SMrecords.csv
+df = pd.read_csv(url, parse_dates=['実施日', '予約リクエスト日', '成約日'])
 
 #スペースマーケットのデータからキャンセルを省く
 sm_reservations = df[df['予約タイプ']=='本予約']
