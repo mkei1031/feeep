@@ -104,7 +104,7 @@ current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
 # df_app.to_csv('/Users/keimoriyama/Desktop/DB/app_totall.csv')
 
-url = 'https://github.com/mkei1031/feeep_sm/raw/main/app_totall.csv'
+url = 'https://github.com/mkei1031/feeep/raw/main/app_totall.csv'
 
 df = pd.read_csv(url,parse_dates=['利用開始日時','利用終了日時','予約日時'])
 
