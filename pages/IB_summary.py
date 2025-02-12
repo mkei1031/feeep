@@ -10,10 +10,11 @@ import datetime
 current_time = datetime.datetime.now()
 current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
-#スペースマーケットの全データを読み込む
-df = pd.read_csv('/Users/keimoriyama/Desktop/IB/all_IBrecords.csv',parse_dates=['利用開始日時','利用終了日時','申込日時'])
+#インスタベースの全データを読み込む
+url = 'https://github.com/mkei1031/feeep_sm/raw/main/all_IBrecords.csv'
+df = pd.read_csv(url,parse_dates=['利用開始日時','利用終了日時','申込日時'])
 
-#スペースマーケットのデータからキャンセルを省く
+#インスタベースのデータからキャンセルを省く
 ib_reservations = df[df['ステータス']=='予約確定']
 
 #タイトルの見出し
