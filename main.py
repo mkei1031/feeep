@@ -9,7 +9,7 @@ pages = {
     'スペースマーケットサマリ'
 }
 
-page = st.sidebar.radio("ページを選んでください", list(pages.keys()))
+page = st.sidebar.radio("ページを選んでください", list(pages)
 if page == 'アプリサマリ':
     st.write("app_summary.py の内容が表示されます")
     # app_summary.pyのインポートを行う場合もあります
