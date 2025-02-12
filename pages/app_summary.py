@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 
 #MySQLに接続
 conn = mysql.connector.connect(
-    host = 'localhost',
+    host = '192.168.10.112',
     user = 'feeep_read_only',
     password = 'r44i6cebg',
     database = 'feeep',
