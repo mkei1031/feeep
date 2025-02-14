@@ -107,11 +107,15 @@ current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
 # df_user = pd.read_sql('SELECT * FROM t_userlists' , conn)
 # df_user.to_csv('/Users/keimoriyama/Desktop/DB/userlists.csv')
-df_user = pd.read_csv('/Users/keimoriyama/Desktop/DB/userlists.csv',parse_dates=['created_at'])
+
+url1 = 'https://github.com/mkei1031/feeep/raw/main/app_total.csv'
+url2 = 'https://github.com/mkei1031/feeep/raw/main/userlists.csv'
+
+df_user = pd.read_csv(url2,parse_dates=['created_at'])
 
 # df_app.to_csv('/Users/keimoriyama/Desktop/DB/app_totall.csv')
 
-df_app = pd.read_csv('/Users/keimoriyama/Desktop/DB/app_totall.csv',parse_dates=['利用開始日時','利用終了日時','予約日時'])
+df_app = pd.read_csv(url1,parse_dates=['利用開始日時','利用終了日時','予約日時'])
 
 app_reservations = df_app[df_app['ユーザー種別'].isin(['ユーザー' or 'FC代理店' or 'toC営業' or '法人プラン'])]
 app_member = df_user[df_user['tag_disp_name'].isin(['ユーザー' or 'FC代理店' or 'toC営業' or '法人プラン'])]
