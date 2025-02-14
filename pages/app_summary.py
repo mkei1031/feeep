@@ -83,7 +83,10 @@ current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 #     rr.payment_price + rr.use_point as 利用料金,
 #     rr.package_id as パックプラン,
 #     t_userlists.user_id,
-#     t_userlists.tag_disp_name as ユーザー種別
+#     t_userlists.tag_disp_name as ユーザー種別,
+#     t_userlists.created_at as 登録日時,
+#     timestampdiff(day , t_userlists.created_at , rr.use_start_date) as 登録からの日数,
+#     timestampdiff(month , t_userlists.created_at , rr.use_start_date) as 登録からの月数
 # FROM
 #     t_reserve_rooms as rr
 # LEFT JOIN
@@ -102,13 +105,16 @@ current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
 # df_app = pd.DataFrame(rows)
 
+# df_user = pd.read_sql('SELECT * FROM t_userlists' , conn)
+# df_user.to_csv('/Users/keimoriyama/Desktop/DB/userlists.csv')
+df_user = pd.read_csv('/Users/keimoriyama/Desktop/DB/userlists.csv',parse_dates=['created_at'])
+
 # df_app.to_csv('/Users/keimoriyama/Desktop/DB/app_totall.csv')
 
-url = 'https://github.com/mkei1031/feeep/raw/main/app_totall.csv'
+df_app = pd.read_csv('/Users/keimoriyama/Desktop/DB/app_totall.csv',parse_dates=['利用開始日時','利用終了日時','予約日時'])
 
-df = pd.read_csv(url,parse_dates=['利用開始日時','利用終了日時','予約日時'])
-
-app_reservations = df[df['ユーザー種別'].isin(['ユーザー' or 'FC代理店' or 'toC営業' or '法人プラン'])]
+app_reservations = df_app[df_app['ユーザー種別'].isin(['ユーザー' or 'FC代理店' or 'toC営業' or '法人プラン'])]
+app_member = df_user[df_user['tag_disp_name'].isin(['ユーザー' or 'FC代理店' or 'toC営業' or '法人プラン'])]
 
 app_reservations['利用時間'] = pd.to_numeric(app_reservations['利用時間'],errors = 'coerce')
 
@@ -124,11 +130,23 @@ if flgButton:
 #店舗切替ボタン
 store_options = ['全体'] + list(app_reservations['店舗'].unique())
 selected_store = st.selectbox('表示するデータを選択',store_options,index=0)
-
 if selected_store == '全体':
     app_reservations = app_reservations
 else:
     app_reservations = app_reservations[app_reservations['店舗']==selected_store]
+
+#st.write(app_reservations)
+
+#利用日時フィルタリング
+st.write('利用期間を指定')
+use_start_period = st.date_input('日付を選択')
+use_end_period = st.date_input('から')
+st.write('まで')
+
+use_start_period = pd.to_datetime(use_start_period)
+use_end_period = pd.to_datetime(use_end_period)
+
+app_reservations = app_reservations[(app_reservations['利用開始日時'] >= use_start_period) & ( app_reservations['利用開始日時'] <= use_end_period)]
 
 #日次と月次切替ボタン
 selected_time = st.radio('表示データ種別',['日次', '月次'])
@@ -188,6 +206,84 @@ app_seat_new = filter_total(app_reservations , '座席タイプ','新規' , freq
 app_seat_repeat = filter_total(app_reservations , '座席タイプ','リピーター' , freq)
 app_seat_usetime = filter_total(app_reservations , '座席タイプ','利用時間' , freq)
 
+#ユーザー分析の集計
+
+#特定の期間の登録者数
+app_member_filter = app_member[(app_member['created_at'] >= use_start_period) & (app_member['created_at'] <= use_end_period) ]
+
+#利用者数を集計する関数
+def user_count(data , date , value_col , freq , agg_func , columns):
+    app_data = data.groupby([pd.Grouper(key = date , freq =freq)])[value_col].agg(agg_func).reset_index(name = columns)
+    if freq == 'D':
+        app_data[date] = app_data[date].dt.strftime('%Y-%m-%d')
+    elif freq == 'ME':
+        app_data[date] = app_data[date].dt.strftime('%Y-%m')
+    app_data = app_data.set_index(date)
+    return app_data
+
+app_subscribe_count = user_count(app_member , 'created_at' ,'user_id' , freq , 'nunique' , '登録人数')
+app_subscribe_count['累計会員数'] = app_subscribe_count['登録人数'].cumsum()
+app_user_count = user_count(app_reservations , '利用開始日時', 'ユーザーID' , freq , 'nunique' , '全体利用者数')
+app_newuser_count = user_count(app_reservations[app_reservations['新規'] == 1] , '利用開始日時' , 'ユーザーID' , freq , 'nunique' , '新規利用者数')
+app_olduser_count = user_count(app_reservations[app_reservations['リピーター'] == 1] ,'利用開始日時', 'ユーザーID' , freq , 'nunique' , '既存利用者数')
+
+#特定の期間のアプリ登録者を抽出
+if freq == 'D':
+    app_subscribe_filter = app_member_filter.groupby(pd.Grouper(key = 'created_at' ,freq = 'D'))['user_id'].nunique().reset_index(name = '登録者数')
+    app_subscribe_filter ['登録からの日数'] = (use_end_period - app_subscribe_filter['created_at']).dt.days
+elif freq == 'ME':
+    app_subscribe_filter = app_member_filter.groupby(pd.Grouper(key = 'created_at' ,freq = '30D'))['user_id'].nunique().reset_index(name = '登録者数')
+    app_subscribe_filter ['登録からの月数'] = (use_end_period - app_subscribe_filter['created_at']).dt.days //30
+
+app_subscribe_filter['累計会員数'] = app_subscribe_filter['登録者数'].cumsum()
+
+
+#アクティブ率
+app_user_subscribe = pd.merge(app_subscribe_count , app_user_count , left_index = True , right_index = True)
+app_user_subscribe['アクティブ率(%)'] = (app_user_subscribe['全体利用者数'] / app_user_subscribe['累計会員数']) * 100
+app_active_rate = app_user_subscribe[['アクティブ率(%)']]
+
+#登録からの利用状況
+def time_change(group_by):
+    app_data = app_reservations.groupby(by = group_by).agg({
+        '本予約' : 'sum',
+        'ユーザーID' : 'nunique',
+        '利用料金' : 'sum',
+        'クレカ課金額' : 'sum', 
+        'ポイント' : 'sum'
+    })
+    app_data['1人あたりの予約件数'] = app_data['本予約'] / app_data['ユーザーID']
+    app_data['1人あたりの利用料金'] = app_data['利用料金'] / app_data['ユーザーID']
+    app_data['1人あたりのクレカ課金額'] = app_data['クレカ課金額'] / app_data['ユーザーID']
+    app_data['1人あたりのポイント利用料'] = app_data['ポイント'] / app_data['ユーザーID']
+    app_data['1人あたりの累計利用料'] = app_data['1人あたりの利用料金'].cumsum()
+    app_data['1人あたりの累計クレカ課金額'] = app_data['1人あたりのクレカ課金額'].cumsum()
+    app_data['1人あたりの累計ポイント利用料'] = app_data['1人あたりのポイント利用料'].cumsum()
+    app_usecount_change = app_data[['1人あたりの予約件数']]
+    app_usemoney_change = app_data[['1人あたりの利用料金','1人あたりのクレカ課金額','1人あたりのポイント利用料']]
+    app_ltv = app_data[['1人あたりの累計利用料','1人あたりの累計クレカ課金額','1人あたりの累計ポイント利用料']]
+    app_users = app_data[['ユーザーID']]
+    app_users = app_users.reset_index()
+    app_users = pd.merge(app_users , app_subscribe_filter , on=group_by)
+    app_users['登録者数に対しての利用率の推移'] = (app_users['ユーザーID'] / app_users['累計会員数'])*100
+    app_users.set_index(group_by , inplace=True)
+    app_users = app_users[['登録者数に対しての利用率の推移']]
+    return [app_usecount_change , app_usemoney_change , app_ltv , app_users]
+
+if selected_time == '日次':
+    app_use_daily_change = time_change('登録からの日数')
+    app_count_change = app_use_daily_change[0]
+    app_usemoney_change = app_use_daily_change[1]
+    app_ltv = app_use_daily_change[2]
+    app_users = app_use_daily_change[3]
+elif selected_time == '月次':
+    app_use_monthly_change = time_change('登録からの月数') 
+    app_count_change = app_use_monthly_change[0]
+    app_usemoney_change = app_use_monthly_change[1]
+    app_ltv = app_use_monthly_change[2]
+    app_users = app_use_monthly_change[3]
+    st.write(app_users)
+
 app_list=[
     app_sales , app_credit , app_point , app_count , app_extend , app_cancel , app_new , app_repeat , app_usetime,
     app_store_sale , app_store_credit , app_store_point , app_store_count , app_store_extend , app_store_cancel ,
@@ -233,6 +329,7 @@ def graph(data,title,y_label):
 app_sales_list = [app_sales, app_credit , app_point]
 app_count_list = [app_count, app_extend , app_cancel]
 app_usertype_list = [app_new , app_repeat]
+app_user_list = [app_user_count , app_newuser_count , app_olduser_count]
 
 store_charts = [
     graph(app_store_sale , '店舗ごとの売上' , '金額'),
@@ -251,8 +348,22 @@ charts = [
     graph(app_seat_credit , '座席ごとのクレカ課金額' , '金額'),
     graph(app_seat_point , '座席ごとのポイント利用額' , '金額'),
     graph(app_seat_count , '座席ごとの予約件数' , '予約件数'),
-    graph(app_seat_usetime , '座席ごとの利用時間' , '利用時間'),
+    graph(app_seat_usetime , '座席ごとの利用時間' , '利用時間')
 ]
+
+user_charts = [
+    graph(app_subscribe_count , 'アプリ会員数の推移' , '人数'),
+    graph(app_active_rate , 'アクティブ率(利用者数/会員数)' , '割合(%)'),
+    graph(app_users , '会員数に対しての利用者数の推移' , '割合(%)')
+]
+
+user_charts_store = [
+    graph(app_user_list , f'{selected_store}の利用者数' , '人数'),
+    graph(app_count_change , f'{selected_store}の1人あたりの予約件数の推移' , '件数'),
+    graph(app_usemoney_change , f'{selected_store}の1人あたりの利用料の推移' , '金額'),
+    graph(app_ltv , f'{selected_store}の1人あたりのLTV' , '金額')
+]
+
 
 for chart in charts:
     st.plotly_chart(chart)
@@ -260,43 +371,22 @@ for chart in charts:
 if selected_store == '全体':
     for chart in store_charts:
         st.plotly_chart(chart)
+    for chart in user_charts:
+        st.plotly_chart(chart)
 else:
     pass
 
+for chart in user_charts_store:
+    st.plotly_chart(chart)
+
+
+
 #for app in app_list:
-    st.write(app)
+    #st.write(app)
 
 #for app in app_store_list:
-    st.write(app)
+    #st.write(app)
 
 #st.write(app_reservations)
 
-#予実系
-#日次・月次集計(全体)
-    #売上(クレカ・ポイント)
-    #予約件数(延長件数)
-    #キャンセル件数
-    #予約件数(新規リピーター)
-    #利用時間
-    #店舗ごとの売上
-    #店舗ごとのクレカ
-    #店舗ごとのポイント
-    #店舗ごとの予約件数
-    #店舗ごとの利用時間
-    #座席ごとの売上
-    #座席ごとのクレカ
-    #座席ごとのポイント
-    #座席ごとの予約件数
-    #座席ごとの利用時間
 
-#日次・月次集計(店舗)
-    #売上(クレカ・ポイント)
-    #予約件数(延長件数)
-    #キャンセル件数
-    #予約件数(新規リピーター)
-    #利用時間
-    #座席ごとの売上
-    #座席ごとのクレカ
-    #座席ごとのポイント
-    #座席ごとの予約件数
-    #座席ごとの利用時間
