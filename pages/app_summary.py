@@ -108,7 +108,7 @@ current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 # df_user = pd.read_sql('SELECT * FROM t_userlists' , conn)
 # df_user.to_csv('/Users/keimoriyama/Desktop/DB/userlists.csv')
 
-url1 = 'https://github.com/mkei1031/feeep/raw/main/app_total.csv'
+url1 = 'https://github.com/mkei1031/feeep/raw/main/app_totall.csv'
 url2 = 'https://github.com/mkei1031/feeep/raw/main/userlists.csv'
 
 df_user = pd.read_csv(url2,parse_dates=['created_at'])
