@@ -10,10 +10,11 @@ import datetime
 current_time = datetime.datetime.now()
 current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
-#インスタベースの全データを読み込む
-df = pd.read_csv('/Users/keimoriyama/Desktop/SP/all_SPrecords.csv',parse_dates=['利用開始日時','利用終了日時','予約確定日'])
+#スペイシーの全データを読み込む
+url = 'https://github.com/mkei1031/feeep_sm/raw/main/all_SPrecords.csv'
+df = pd.read_csv(url,parse_dates=['利用開始日時','利用終了日時','予約確定日'])
 
-#インスタベースのデータからキャンセルを省く
+#スペイシーのデータからキャンセルを省く
 sp_reservations = df[df['キャンセル予約金額（税込）'] == 0]
 
 #タイトルの見出し
