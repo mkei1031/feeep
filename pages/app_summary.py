@@ -286,7 +286,7 @@ elif selected_time == '月次':
     app_usemoney_change = app_use_monthly_change[1]
     app_ltv = app_use_monthly_change[2]
     app_users = app_use_monthly_change[3]
-    st.write(app_users)
+    #st.write(app_users)
 
 app_list=[
     app_sales , app_credit , app_point , app_count , app_extend , app_cancel , app_new , app_repeat , app_usetime,
