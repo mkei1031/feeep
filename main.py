@@ -5,8 +5,11 @@ st.set_page_config(page_title='FEEEPレポート')
 # 他のページへのリンクを作成
 st.sidebar.title('目次')
 pages = {
+    '予実管理',
     'アプリサマリ',
-    'スペースマーケットサマリ'
+    'スペースマーケットサマリ',
+    'インスタベースサマリ',
+    'スペイシーサマリ'
 }
 
 page = st.sidebar.radio("ページを選んでください", list(pages))
