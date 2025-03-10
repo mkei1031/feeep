@@ -21,7 +21,7 @@ pages = {
 #     # SM_summary.pyのインポートを行う場合もあります
 
 st.write("左のサイドバーからページを選択してください。")
-st.wirte("all summary : アプリ・外部PFの統合データ")
+st.write("all summary : アプリ・外部PFの統合データ")
 st.write("app summary : アプリデータ")
 st.write("IB summary : インスタベースデータ")
 st.write("SM summary : スペースマーケットデータ")
