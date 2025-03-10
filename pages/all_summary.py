@@ -5,14 +5,14 @@ import plotly.graph_objects as go
 import datetime
 
 #各データの読み込み
-app = pd.read_csv('/Users/keimoriyama/Desktop/DB/app_totall.csv' , parse_dates = ['利用開始日時','利用終了日時','予約日時'])
-sm = pd.read_csv('/Users/keimoriyama/Desktop/SM/all_SMrecords.csv' , parse_dates = ['成約日','実施日'])
-ib = pd.read_csv('/Users/keimoriyama/Desktop/IB/all_IBrecords.csv' , parse_dates = ['申込日時','利用開始日時','利用終了日時'])
-sp = pd.read_csv('/Users/keimoriyama/Desktop/SP/all_SPrecords.csv' , parse_dates = ['予約確定日','利用開始日時','利用終了日時'])
-invoice = pd.read_csv('/Users/keimoriyama/Desktop/DB/invoice.csv' , parse_dates = ['利用開始日時','利用終了日時'])
+app = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/app_totall.csv' , parse_dates = ['利用開始日時','利用終了日時','予約日時'])
+sm = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/all_SMrecords.csv' , parse_dates = ['成約日','実施日'])
+ib = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/all_IBrecords.csv' , parse_dates = ['申込日時','利用開始日時','利用終了日時'])
+sp = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/all_SPrecords.csv' , parse_dates = ['予約確定日','利用開始日時','利用終了日時'])
+invoice = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/invoice.csv' , parse_dates = ['利用開始日時','利用終了日時'])
 #event = pd.read_csv('/Users/keimoriyama/Desktop/DB/event.csv' , parse_dates = ['利用開始日時','利用終了日時'])
-ks = pd.read_csv('/Users/keimoriyama/Desktop/DB/ksks.csv' , parse_dates = ['利用開始日時','利用終了日時'])
-shop_open = pd.read_csv('/Users/keimoriyama/Desktop/DB/open.csv' , parse_dates = ['利用開始日時','利用終了日時'])
+ks = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/ksks.csv' , parse_dates = ['利用開始日時','利用終了日時'])
+shop_open = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/open.csv' , parse_dates = ['利用開始日時','利用終了日時'])
 
 sm['新規'] = (sm['新規かリピーター'] == '新規').astype(int)
 sm['リピーター'] = (sm['新規かリピーター'] == 'リピーター').astype(int)
