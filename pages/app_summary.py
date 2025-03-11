@@ -153,7 +153,7 @@ use_end_period = pd.to_datetime(use_end_period)
 app_reservations = app_reservations[(app_reservations['利用開始日時'] >= use_start_period) & ( app_reservations['利用開始日時'] <= use_end_period)]
 
 #日次と月次切替ボタン
-selected_time = st.radio('表示データ種別',['日次', '月次'])
+selected_time = st.radio('表示データ種別',['月次', '日次'])
 st.text(selected_time)
 
 if selected_time == '日次':
