@@ -35,7 +35,7 @@ else:
     sp_reservations = sp_reservations[sp_reservations['店舗名']==selected_store]
 
 #日次と月次切替ボタン
-selected_time = st.radio('表示データ種別',['日次', '月次'])
+selected_time = st.radio('表示データ種別',['月次', '日次'])
 st.text(selected_time)
 
 if selected_time == '日次':
