@@ -220,7 +220,7 @@ def graph(data , title , y_label):
                     y = expense[cols].mean(),
                     line_color = '#808080',
                     line_dash = 'dash',
-                    annotation_text = f'{col}({expense[cols].mean()}円)'
+                    annotation_text = f'{cols}({expense[cols].mean()}円)'
                 )
     elif freq == 'D':
         fig.update_xaxes(
