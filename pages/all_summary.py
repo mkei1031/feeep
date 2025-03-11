@@ -13,6 +13,7 @@ invoice = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/invoice.csv' ,
 #event = pd.read_csv('/Users/keimoriyama/Desktop/DB/event.csv' , parse_dates = ['利用開始日時','利用終了日時'])
 ks = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/ksks.csv' , parse_dates = ['利用開始日時','利用終了日時'])
 shop_open = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/open.csv' , parse_dates = ['利用開始日時','利用終了日時'])
+expense = pd.read_csv('https://github.com/mkei1031/feeep/raw/main/expense.csv')
 
 sm['新規'] = (sm['新規かリピーター'] == '新規').astype(int)
 sm['リピーター'] = (sm['新規かリピーター'] == 'リピーター').astype(int)
@@ -78,6 +79,7 @@ if selected_store != '全店舗':
     invoice = invoice[invoice['店舗'].str.contains('|'.join(keywords),na=False)]
     ks = ks[ks['店舗'].str.contains('|'.join(keywords),na=False)]
     shop_open = shop_open[shop_open['店舗'].str.contains('|'.join(keywords),na=False)]
+    expense = expense[expense['店舗'].str.contains('|'.join(keywords),na=False)]
 
 
 data_list = [app_reservations, sm_reservations , ib_reservations , sp_reservations , invoice , ks]
@@ -212,6 +214,14 @@ def graph(data , title , y_label):
         fig.update_xaxes(
             tickformat = '%Y-%m'
         )
+        if data is sales_benefit and selected_store != '全店舗':
+            for cols in ['実質賃料', '支出合計(利益補償0.8%除く)', '支出合計(利益補償0.8%含む)']:
+                fig.add_hline(
+                    y = expense[cols].mean(),
+                    line_color = '#808080',
+                    line_dash = 'dash',
+                    annotation_text = f'{col}({expense[cols].mean()}円)'
+                )
     elif freq == 'D':
         fig.update_xaxes(
             tickformat = '%Y-%m-%d'
